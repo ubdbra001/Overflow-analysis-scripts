@@ -14,7 +14,7 @@ properties (Constant)
     sampleRate = 512;
     
     % set electrode location file
-    locationFile = 'biosemi64.sph'
+    locFile = 'biosemi64.sph'
     
     % set cutoff frequencies
     HP_cutoff_EEG = 0.5
@@ -26,11 +26,12 @@ properties (Constant)
     baselineLength = [-3 0]    % set baseline length
 
     % Associate event codes with event types
-    slowEvent      = NaN
-    mediumEvent    = NaN
-    fastEvent      = NaN
+    markers = [60001, 60002, 60003];
 
     Groups = {'CON', 'DCD'};
+    
+    outputs = {'PreEpoch'}
+    error = 'Error'
     
 end
 
