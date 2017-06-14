@@ -60,9 +60,7 @@ for group = PreProcConstants.Groups
                 end
                 EEG.log = [EEG.log; sprintf('%s - VEOG channel added', datestr(now))];
             end
-            
-            EEG.EMG_rawdata = EEG.data(71:72,:);
-            
+                        
             [EEG, warn] = func_checkEvents(EEG);                           % Check and fix event codes
             
             if warn % If there is something dodgy with the event markers then save the data under a different name for inspection
@@ -72,14 +70,20 @@ for group = PreProcConstants.Groups
                 continue
             else    % Otherwise place it in the PreEpoch folder in prep for Epoching and ICA
                 EEG.log = {EEG.log; sprintf('%s - Event codes checked', datestr(now, 13))};
-                EEG     = func_saveData(EEG, PreProcConstants.outputs{1});
             end
             
+            % Separate EMG channels
+            EEG.EMG = pop_select(EEG, 'channel', PreProcConstants.EMG_chans);
+            EEG = pop_select(EEG, 'nochannel', PreProcConstants.EMG_chans);
+            EEG.log = {EEG.log; sprintf('%s - EMG Channels separated', datestr(now, 13))};
+            
+            EEG     = func_saveData(EEG, PreProcConstants.outputs{1});
+            
             fprintf('\n\n%s - Pre-epoching for %s complete\n\n', datestr(now), fileID)
+            
         elseif exist(sprintf('%s_%s.set', fileID, PreProcConstants.error),'file') % Only do these steps if the PreEpoch file doesn't already exist
             fprintf('\n\n Error file already exisits for this... Skipping.\n\n');
-            continue
-            
+            continue      
         end
         
         %% Filter and epoch steps
@@ -89,11 +93,8 @@ for group = PreProcConstants.Groups
                 EEG = pop_loadset('filename',fName);
             end
         
-            EEG.data(1:70,:)   = eegfilt(EEG.data(1:70,:), EEG.srate, PreProcConstants.HP_cutoff_EEG, 0);
-            EEG.log            = [EEG.log; sprintf('%s - EEG High-pass filtered at %d', datestr(now, 13), PreProcConstants.HP_cutoff_EEG)];
-        
-            EEG.data(71:72,:)  = eegfilt(EEG.data(71:72,:), EEG.srate, PreProcConstants.HP_cutoff_EMG, 0);
-            EEG.log            = [EEG.log; sprintf('%s - EMG High-pass filtered at %d', datestr(now, 13), PreProcConstants.HP_cutoff_EMG)];
+            EEG         = pop_eegfiltnew(EEG, PreProcConstants.HP_cutoff_EEG, 0);
+            EEG.log     = [EEG.log; sprintf('%s - EEG High-pass filtered at %d', datestr(now, 13), PreProcConstants.HP_cutoff_EEG)];
         
             EEG         = pop_epoch( EEG, {60001}, PreProcConstants.ICAepochLength); % Epoch the data
             EEG.log     = [EEG.log; {sprintf('%s - Data epoched for ICA', datestr(now, 13))}];
@@ -117,7 +118,44 @@ for group = PreProcConstants.Groups
             EEG = func_saveData(EEG, PreProcConstants.outputs{3});
         end
         
-        %% Start adding next steps here
+        %% Reject ICA component step
+        if ~exist(sprintf('%s_%s.set', fileID, PreProcConstants.outputs{4}),'file') && any(ismember(analysisSelections,4))
+            
+            if ~exist('EEG', 'var') && exist(sprintf('%s_%s.set', fileID, PreProcConstants.outputs{3}),'file') % Could probably turn this into a function
+                fName = sprintf('%s_%s.set', fileID, PreProcConstants.outputs{3});
+                EEG = pop_loadset('filename',fName);
+            end
+            
+            EEG = pop_selectcomps(EEG, [1:10]);                 % Display component maps for rejection
+            waitfor( findobj('parent', gcf, 'string', 'OK'), 'userdata');
+            
+            EEG = pop_subcomp(EEG, [] , 1);                     % Remove selected components
+            waitfor( findobj('parent', gcf, 'string', 'Accept'), 'userdata');
+            EEG.log = [EEG.log; {sprintf('%s - ICA components removed', datestr(now, 13))}];
+            
+            EEG = func_saveData(EEG, PreProcConstants.outputs{3});
+        end
+        
+        %% Interpolate bad electrodes & low-pass filter EEG
+        if ~exist(sprintf('%s_%s.set', fileID, PreProcConstants.outputs{5}),'file') && any(ismember(analysisSelections,5))
+            
+            if ~exist('EEG', 'var') && exist(sprintf('%s_%s.set', fileID, PreProcConstants.outputs{4}),'file')
+                fName = sprintf('%s_%s.set', fileID, PreProcConstants.outputs{4});
+                EEG = pop_loadset('filename',fName);
+            end
+            
+            EEG.bad_chan_data   = EEG.data(EEG.bad_chans, :,:);                 % Save bad chan data
+            EEG                 = pop_interp(EEG, EEG.bad_chans, 'spherical');  % Interpolate bad channels
+            EEG.include         = sort([EEG.include EEG.bad_chans]);            % Add bad chans back into include list
+            EEG.log             = [EEG.log; {sprintf('%s - Bad chans interpolated', datestr(now, 13))}];
+            
+            
+            
+            EEG = func_saveData(EEG, PreProcConstants.outputs{4});
+         end
+        %% Reject bad epochs
+        
+        %% Epoch into different conditions
     
         clear EEG
     end

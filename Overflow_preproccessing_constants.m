@@ -34,12 +34,12 @@ properties (Constant)
 
     Groups = {'CON', 'DCD'};
     
-    outputs = {'PreEpoched','Epoched', 'ICAed'}
+    outputs = {'PreEpoched','Epoched', 'ICAed', 'ICArejected', }
     error = 'Error'
     
     analysisListOptions = {'PromptString','Select steps:',...
                            'SelectionMode','multiple',...
-                           'ListString',{'Pre-Epoch','Epoch', 'ICA'}}
+                           'ListString',{'Pre-Epoch','Epoch', 'ICA', 'Reject ICA components', 'Interpolate and LP filter'}}
     
 end
 
