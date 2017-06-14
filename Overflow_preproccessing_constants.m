@@ -16,22 +16,30 @@ properties (Constant)
     % set electrode location file
     locFile = 'biosemi64.sph'
     
+    % set bad channels file
+    badChansFile = 'badChans.mat';
+    
     % set cutoff frequencies
-    HP_cutoff_EEG = 0.5
-    LP_cutoff_EEG = NaN
+    HP_cutoff_EEG = 1
+    LP_cutoff_EEG = 35
     
     HP_cutoff_EMG = 10
 
-    epochLength = [0 5]        % set epoch length
-    baselineLength = [-3 0]    % set baseline length
+    ICAepochLength = [-2 17]    % set epoch length for ICA
+    epochLength    = [-0.4 5.4] % set epoch length for TFR 
+    baselineLength = [-2 0]     % set baseline length
 
     % Associate event codes with event types
     markers = [60001, 60002, 60003];
 
     Groups = {'CON', 'DCD'};
     
-    outputs = {'PreEpoch'}
+    outputs = {'PreEpoched','Epoched', 'ICAed'}
     error = 'Error'
+    
+    analysisListOptions = {'PromptString','Select steps:',...
+                           'SelectionMode','multiple',...
+                           'ListString',{'Pre-Epoch','Epoch', 'ICA'}}
     
 end
 
