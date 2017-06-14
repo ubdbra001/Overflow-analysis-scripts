@@ -34,7 +34,7 @@ properties (Constant)
 
     Groups = {'CON', 'DCD'};
     
-    outputs = {'PreEpoched','Epoched', 'ICAed', 'ICArejected', }
+    outputs = {'PreEpoched','Epoched', 'ICAed', 'ICArejected', 'Interpolated'}
     error = 'Error'
     
     analysisListOptions = {'PromptString','Select steps:',...

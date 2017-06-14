@@ -54,7 +54,7 @@ for group = PreProcConstants.Groups
             if ~isfield(EEG, 'VEOG_n')                                     % Create single VEOG Chan for ICA
                 EEG.VEOG_n = length(EEG.data(:,1))+1;
                 EEG.data(EEG.VEOG_n,:) = EEG.data(PreProcConstants.VEOG_chans(1),:) - EEG.data(PreProcConstants.VEOG_chans(2),:);
-                EEG.nbdata = size(EEG.data,1);
+                EEG.nbchan = size(EEG.data,1);
                 if ~isempty(EEG.chanlocs)
                     EEG.chanlocs(EEG.VEOG_n).labels = 'VEOG';
                 end
@@ -74,7 +74,7 @@ for group = PreProcConstants.Groups
             
             % Separate EMG channels
             EEG.EMG = pop_select(EEG, 'channel', PreProcConstants.EMG_chans);
-            EEG = pop_select(EEG, 'nochannel', PreProcConstants.EMG_chans);
+            EEG     = pop_select(EEG, 'nochannel', PreProcConstants.EMG_chans);
             EEG.log = {EEG.log; sprintf('%s - EMG Channels separated', datestr(now, 13))};
             
             EEG     = func_saveData(EEG, PreProcConstants.outputs{1});
