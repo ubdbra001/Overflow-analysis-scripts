@@ -8,6 +8,7 @@ addpath(genpath(fileparts(mfilename('fullpath'))))                         % Add
 PreProcConstants = Overflow_preproccessing_constants;                      % Get constants
 
 analysisSelections = listdlg(PreProcConstants.analysisListOptions{:});     % Decide wich steps to run
+if isempty(analysisSelections); error('Nothing selected/User aborted'); end
 
 addpath(genpath(PreProcConstants.dataPath))                                % Add data dir and sub dirs to path
 cd(PreProcConstants.dataPath)                                              % Change to data dir
@@ -42,8 +43,11 @@ for group = PreProcConstants.Groups
             EEG.include   = 1:64;                                          % Set electrode include list
             
             badChan_temp = badChans.(group{:})(EEG.subject, ~cellfun('isempty', badChans.(group{:})(EEG.subject, :)));
-            EEG.bad_chans = std_chaninds(EEG, badChan_temp(2:end));    % Convert bad channels from variable to electrode indices for interpolation
-            EEG.include(EEG.bad_chans) = [];                               % Remove the bad chans from include list
+            
+            if length(badChan_temp) > 1
+                EEG.bad_chans = std_chaninds(EEG, badChan_temp(2:end));    % Convert bad channels from variable to electrode indices for interpolation
+                EEG.include(EEG.bad_chans) = [];                               % Remove the bad chans from include list
+            end
             
             clear badChan_temp
             
@@ -112,6 +116,8 @@ for group = PreProcConstants.Groups
         
             EEG = func_saveData(EEG, PreProcConstants.outputs{3});
         end
+        
+        %% Start adding next steps here
     
         clear EEG
     end
