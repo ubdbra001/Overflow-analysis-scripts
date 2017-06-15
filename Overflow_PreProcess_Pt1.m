@@ -93,8 +93,13 @@ for group = PreProcConstants.Groups
         %% Filter and epoch steps
         if ~exist(sprintf('%s_%s.set', fileID, PreProcConstants.outputs{2}),'file') && any(ismember(analysisSelections,2))
             
-            func_checkAndLoad(fileID, 1);
-        
+            try
+                func_checkAndLoad(fileID, 1);
+            catch err
+                func_warning(err.message)
+                continue
+            end        
+            
             EEG         = pop_eegfiltnew(EEG, PreProcConstants.HP_cutoff_EEG, 0);
             EEG.log     = [EEG.log; sprintf('%s - EEG High-pass filtered at %d', datestr(now, 13), PreProcConstants.HP_cutoff_EEG)];
         
@@ -107,7 +112,12 @@ for group = PreProcConstants.Groups
         %% ICA step
         if ~exist(sprintf('%s_%s.set', fileID, PreProcConstants.outputs{3}),'file') && any(ismember(analysisSelections,3))
 
-            func_checkAndLoad(fileID, 2);
+            try
+                func_checkAndLoad(fileID, 2);
+            catch err
+                func_warning(err.message)
+                continue
+            end
             
             fprintf('\n%s - Starting ICA...\n\n',datestr(now));
             
@@ -128,7 +138,12 @@ for group = PreProcConstants.Groups
         %% Reject ICA component step
         if ~exist(sprintf('%s_%s.set', fileID, PreProcConstants.outputs{4}),'file') && any(ismember(analysisSelections,4))
             
-            func_checkAndLoad(fileID, 3);
+            try
+                func_checkAndLoad(fileID, 3);
+            catch err
+                func_warning(err.message)
+                continue
+            end 
             
             EEG = pop_selectcomps(EEG, [1:10]);                 % Display component maps for rejection
             waitfor( findobj('parent', gcf, 'string', 'OK'), 'userdata');
@@ -143,7 +158,12 @@ for group = PreProcConstants.Groups
         %% Interpolate bad electrodes & low-pass filter EEG
         if ~exist(sprintf('%s_%s.set', fileID, PreProcConstants.outputs{5}),'file') && any(ismember(analysisSelections,5))
             
-            func_checkAndLoad(fileID, 4);
+            try
+                func_checkAndLoad(fileID, 4);
+            catch err
+                func_warning(err.message)
+                continue
+            end
             
             EEG.bad_chan_data   = EEG.data(EEG.bad_chans, :,:);                 % Save bad chan data
             EEG                 = pop_interp(EEG, EEG.bad_chans, 'spherical');  % Interpolate bad channels

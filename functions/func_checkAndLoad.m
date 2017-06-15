@@ -8,5 +8,5 @@ elseif exist(fileName,'file')
     EEG = pop_loadset('filename',fileName);
     assignin('base', 'EEG', EEG)
 elseif ~exist(fileName,'file')
-    error('No EEG variable and no file found. Have you done the preceding steps?')
+    error('No EEG variable and no file %s found. Have you done the preceding steps?', fileName{:})
 end

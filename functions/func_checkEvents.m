@@ -17,7 +17,6 @@ end
 
 if n ~= 3     % Show warning as the events are screwed up!
     warningMes = 'Warning: unexpected number of events found in this file!';
-    border = repmat('*',1, length(warningMes)+4);
-    fprintf('\n\n%s\n* %s *\n%s\n\n', border, warningMes, border)
+    func_warning(warningMes);
     error = 1;
 end
