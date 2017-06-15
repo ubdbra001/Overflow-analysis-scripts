@@ -22,6 +22,11 @@ for group = PreProcConstants.Groups
         
         [~, fileID, ~] = fileparts(fileName{:});                           % Set File identifier
         
+        if exist(sprintf('%s_%s.set', fileID, PreProcConstants.error),'file') % Only do these steps if an error file doesn't already exist
+            fprintf('\n\nError file exists for %s... Skipping.\n\n', fileID);
+            continue
+        end
+        
         %% Pre epoch steps
         if ~exist(sprintf('%s_%s.set', fileID, PreProcConstants.outputs{1}),'file') &&  any(ismember(analysisSelections,1))% Only do these steps if the PreEpoch file doesn't already exist
             
@@ -50,17 +55,7 @@ for group = PreProcConstants.Groups
             end
             
             clear badChan_temp
-            
-            if ~isfield(EEG, 'VEOG_n')                                     % Create single VEOG Chan for ICA
-                EEG.VEOG_n = length(EEG.data(:,1))+1;
-                EEG.data(EEG.VEOG_n,:) = EEG.data(PreProcConstants.VEOG_chans(1),:) - EEG.data(PreProcConstants.VEOG_chans(2),:);
-                EEG.nbchan = size(EEG.data,1);
-                if ~isempty(EEG.chanlocs)
-                    EEG.chanlocs(EEG.VEOG_n).labels = 'VEOG';
-                end
-                EEG.log = [EEG.log; sprintf('%s - VEOG channel added', datestr(now))];
-            end
-                        
+               
             [EEG, warn] = func_checkEvents(EEG);                           % Check and fix event codes
             
             if warn % If there is something dodgy with the event markers then save the data under a different name for inspection
@@ -77,13 +72,22 @@ for group = PreProcConstants.Groups
             EEG     = pop_select(EEG, 'nochannel', PreProcConstants.EMG_chans);
             EEG.log = {EEG.log; sprintf('%s - EMG Channels separated', datestr(now, 13))};
             
+            if ~any(ismember({EEG.chanlocs.labels}, 'VEOG'))               % Create single VEOG Chan for ICA
+                VEOG_n = length(EEG.data(:,1))+1;
+                EEG.data(VEOG_n,:) = EEG.data(PreProcConstants.VEOG_chans(1),:) - EEG.data(PreProcConstants.VEOG_chans(2),:);
+                EEG.nbchan = size(EEG.data,1);
+                if ~isempty(EEG.chanlocs)
+                    EEG.chanlocs(VEOG_n).labels = 'VEOG';
+                end
+                clear VEOG_n
+                EEG.log = [EEG.log; sprintf('%s - VEOG channel added', datestr(now))];
+            end
+                     
+            
             EEG     = func_saveData(EEG, PreProcConstants.outputs{1});
             
             fprintf('\n\n%s - Pre-epoching for %s complete\n\n', datestr(now), fileID)
-            
-        elseif exist(sprintf('%s_%s.set', fileID, PreProcConstants.error),'file') % Only do these steps if the PreEpoch file doesn't already exist
-            fprintf('\n\n Error file already exisits for this... Skipping.\n\n');
-            continue      
+                  
         end
         
         %% Filter and epoch steps
@@ -109,8 +113,14 @@ for group = PreProcConstants.Groups
                 EEG = pop_loadset('filename',fName);
             end
             fprintf('\n%s - Starting ICA...\n\n',datestr(now));
+            
+            try
+                EEG = pop_runica(EEG, 'extended', 1,'verbose', 'on', 'chanind', [EEG.include find(ismember({EEG.chanlocs.labels}, 'VEOG'))]); % Run ICA
+            catch
+                fprintf('\n\nVEOG channel not found... Skipping...\n\n')
+                continue
+            end
         
-            EEG     = pop_runica(EEG, 'extended', 1,'verbose', 'off', 'chanind', [EEG.include EEG.VEOG_n]); % Run ICA
             EEG.log = [EEG.log; {sprintf('%s - ICA Completed', datestr(now, 13))}];
         
             fprintf('\n%s - Finished ICA...\n\n',datestr(now));
