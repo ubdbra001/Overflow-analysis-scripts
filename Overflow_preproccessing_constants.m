@@ -11,7 +11,7 @@ properties (Constant)
     EMG_chans  = [71 72];
 
     % set sampling rate
-    sampleRate = 512;
+    sampleRate = 256;
     
     % set electrode location file
     locFile = 'biosemi64.sph'
