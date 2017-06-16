@@ -21,7 +21,7 @@ properties (Constant)
     
     % set cutoff frequencies
     HP_cutoff_EEG = 1
-    LP_cutoff_EEG = 35
+    LP_cutoff_EEG = 40
     
     HP_cutoff_EMG = 10
 
@@ -34,12 +34,12 @@ properties (Constant)
 
     Groups = {'CON', 'DCD'};
     
-    outputs = {'PreEpoched','Epoched', 'ICAed', 'ICArejected', 'Interpolated'}
+    outputs = {'PreEpoched','Epoched', 'ICAed', 'ICArejected', 'Interpolated', 'Rejected'}
     error = 'Error'
     
     analysisListOptions = {'PromptString','Select steps:',...
                            'SelectionMode','multiple',...
-                           'ListString',{'Pre-Epoch','Epoch', 'ICA', 'Reject ICA components', 'Interpolate and LP filter'}}
+                           'ListString',{'Pre-Epoch','Epoch', 'ICA', 'Reject ICA components', 'Interpolate and LP filter', 'Reject bad epochs'}}
     
 end
 

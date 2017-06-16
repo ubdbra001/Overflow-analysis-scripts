@@ -30,7 +30,7 @@ for group = PreProcConstants.Groups
         %% Pre epoch steps
         if ~exist(sprintf('%s_%s.set', fileID, PreProcConstants.outputs{1}),'file') &&  any(ismember(analysisSelections,1))% Only do these steps if the PreEpoch file doesn't already exist
             
-            fprintf('\n%s - Starting %s...\n\n',datestr(now),fileID);
+            fprintf('\n\n%s - Starting %s...\n\n',datestr(now),fileID);
             pause(0.5)
             
             EEG = pop_biosig(fileName{:}, 'ref', PreProcConstants.Ref_chans); % Import BDF file
@@ -121,10 +121,10 @@ for group = PreProcConstants.Groups
             
             fprintf('\n%s - Starting ICA...\n\n',datestr(now));
             
-            try
+            try % Try to run ICA
                 EEG = pop_runica(EEG, 'extended', 1,'verbose', 'on', 'chanind', [EEG.include find(ismember({EEG.chanlocs.labels}, 'VEOG'))]); % Run ICA
             catch
-                fprintf('\n\nVEOG channel not found... Skipping...\n\n')
+                fprintf('\n\nVEOG channel not found... Skipping...\n\n');
                 continue
             end
         
@@ -170,9 +170,23 @@ for group = PreProcConstants.Groups
             EEG.include         = sort([EEG.include EEG.bad_chans]);            % Add bad chans back into include list
             EEG.log             = [EEG.log; {sprintf('%s - Bad chans interpolated', datestr(now, 13))}];
             
-            EEG = func_saveData(EEG, PreProcConstants.outputs{4});
+            EEG                 = pop_eegfiltnew(EEG, 0, PreProcConstants.LP_cutoff_EEG); % Low pass (40Hz) filter
+            EEG.log             = [EEG.log; {sprintf('%s - Low pass filtered at %d Hz', datestr(now, 13), PreProcConstants.LP_cutoff_EEG)}];
+            
+            EEG                 = func_saveData(EEG, PreProcConstants.outputs{4});
          end
         %% Reject bad epochs
+        if ~exist(sprintf('%s_%s.set', fileID, PreProcConstants.outputs{6}),'file') && any(ismember(analysisSelections,6))
+            try
+                func_checkAndLoad(fileID, 5);
+            catch err
+                func_warning(err.message)
+                continue
+            end
+            
+            
+        end
+
         
         %% Epoch into different conditions
     
