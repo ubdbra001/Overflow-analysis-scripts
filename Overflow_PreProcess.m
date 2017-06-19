@@ -59,18 +59,18 @@ for group = PreProcConstants.Groups
             [EEG, warn] = func_checkEvents(EEG);                           % Check and fix event codes
             
             if warn % If there is something dodgy with the event markers then save the data under a different name for inspection
-                EEG.log = {EEG.log; sprintf('%s - Event codes are weird: Recheck', datestr(now, 13))};
+                EEG.log = [EEG.log; sprintf('%s - Event codes are weird: Recheck', datestr(now, 13))];
                 EEG     = func_saveData(EEG, PreProcConstants.error);
                 fprintf('\n\n%s - Skipping rest of pipeline for %s\n\n', datestr(now), fileID)
                 continue
             else    % Otherwise place it in the PreEpoch folder in prep for Epoching and ICA
-                EEG.log = {EEG.log; sprintf('%s - Event codes checked', datestr(now, 13))};
+                EEG.log = [EEG.log; sprintf('%s - Event codes checked', datestr(now, 13))];
             end
             
             % Separate EMG channels
             EEG.EMG = pop_select(EEG, 'channel', PreProcConstants.EMG_chans);
             EEG     = pop_select(EEG, 'nochannel', PreProcConstants.EMG_chans);
-            EEG.log = {EEG.log; sprintf('%s - EMG Channels separated', datestr(now, 13))};
+            EEG.log = [EEG.log; sprintf('%s - EMG Channels separated', datestr(now, 13))];
             
             if ~any(ismember({EEG.chanlocs.labels}, 'VEOG'))               % Create single VEOG Chan for ICA
                 VEOG_n = length(EEG.data(:,1))+1;
@@ -80,7 +80,7 @@ for group = PreProcConstants.Groups
                     EEG.chanlocs(VEOG_n).labels = 'VEOG';
                 end
                 clear VEOG_n
-                EEG.log = [EEG.log; sprintf('%s - VEOG channel added', datestr(now))];
+                EEG.log = [EEG.log; sprintf('%s - VEOG channel added', datestr(now,13))];
             end
                      
             
