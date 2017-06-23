@@ -21,6 +21,7 @@ for group = PreProcConstants.Groups
     for fileName = {files.name}
         
         [~, fileID, ~] = fileparts(fileName{:});                           % Set File identifier
+        ALLEEG = []; CURRENTSET = 1;
         
         if exist(sprintf('%s_%s.set', fileID, PreProcConstants.error),'file') % Only do these steps if an error file doesn't already exist
             fprintf('\n\nError file exists for %s... Skipping.\n\n', fileID);
@@ -145,14 +146,16 @@ for group = PreProcConstants.Groups
                 continue
             end 
             
-            EEG = pop_selectcomps(EEG, [1:10]);                 % Display component maps for rejection
-            waitfor( findobj('parent', gcf, 'string', 'OK'), 'userdata');
             
-            EEG = pop_subcomp(EEG, [] , 1);                     % Remove selected components
-            waitfor( findobj('parent', gcf, 'string', 'Accept'), 'userdata');
+            while ~isempty(EEG.reject) % Loop until component rejection accepted
+                EEG = pop_selectcomps(EEG, [1:10]);                                    % Display component maps for rejection
+                uiwait(gcf)
+            
+                EEG = pop_subcomp(EEG, [] , 1);                                        % Remove selected components
+            end
             EEG.log = [EEG.log; {sprintf('%s - ICA components removed', datestr(now, 13))}];
             
-            EEG = func_saveData(EEG, PreProcConstants.outputs{3});
+            EEG = func_saveData(EEG, PreProcConstants.outputs{4});
         end
         
         %% Interpolate bad electrodes & low-pass filter EEG
@@ -173,7 +176,7 @@ for group = PreProcConstants.Groups
             EEG                 = pop_eegfiltnew(EEG, 0, PreProcConstants.LP_cutoff_EEG); % Low pass (40Hz) filter
             EEG.log             = [EEG.log; {sprintf('%s - Low pass filtered at %d Hz', datestr(now, 13), PreProcConstants.LP_cutoff_EEG)}];
             
-            EEG                 = func_saveData(EEG, PreProcConstants.outputs{4});
+            EEG                 = func_saveData(EEG, PreProcConstants.outputs{5});
          end
         %% Reject bad epochs
         if ~exist(sprintf('%s_%s.set', fileID, PreProcConstants.outputs{6}),'file') && any(ismember(analysisSelections,6))
@@ -190,7 +193,7 @@ for group = PreProcConstants.Groups
         
         %% Epoch into different conditions
     
-        clear EEG
+        clear EEG ALLEEG
     end
 end
 
