@@ -168,10 +168,12 @@ for group = PreProcConstants.Groups
                 continue
             end
             
-            EEG.bad_chan_data   = EEG.data(EEG.bad_chans, :,:);                 % Save bad chan data
-            EEG                 = pop_interp(EEG, EEG.bad_chans, 'spherical');  % Interpolate bad channels
-            EEG.include         = sort([EEG.include EEG.bad_chans]);            % Add bad chans back into include list
-            EEG.log             = [EEG.log; {sprintf('%s - Bad chans interpolated', datestr(now, 13))}];
+            if isfield(EEG, 'bad_chans')
+                EEG.bad_chan_data   = EEG.data(EEG.bad_chans, :,:);                 % Save bad chan data
+                EEG                 = pop_interp(EEG, EEG.bad_chans, 'spherical');  % Interpolate bad channels
+                EEG.include         = sort([EEG.include EEG.bad_chans]);            % Add bad chans back into include list
+                EEG.log             = [EEG.log; {sprintf('%s - Bad chans interpolated', datestr(now, 13))}];
+            end
             
             EEG                 = pop_eegfiltnew(EEG, 0, PreProcConstants.LP_cutoff_EEG); % Low pass (40Hz) filter
             EEG.log             = [EEG.log; {sprintf('%s - Low pass filtered at %d Hz', datestr(now, 13), PreProcConstants.LP_cutoff_EEG)}];
