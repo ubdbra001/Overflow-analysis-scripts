@@ -25,21 +25,24 @@ properties (Constant)
     
     HP_cutoff_EMG = 10
 
-    ICAepochLength = [-2 17]    % set epoch length for ICA
-    epochLength    = [-0.4 5.4] % set epoch length for TFR 
-    baselineLength = [-2 0]     % set baseline length
+    ICAepochLength  = [-2 17]    % set epoch length for ICA
+    epochLength     = [-0.4 5.4] % set epoch length for TFR 
+    baselineLength  = [-2 0]     % set baseline length
+    rejectionWindow = [-2 15]    % set window for epoch rejection
 
     % Associate event codes with event types
     markers = [60001, 60002, 60003];
 
     Groups = {'CON', 'DCD'};
     
-    outputs = {'PreEpoched','Epoched', 'ICAed', 'ICArejected', 'Interpolated', 'Rejected'}
+    outputs = {'PreEpoched','Epoched', 'ICAed', 'ICArejected', 'Interpolated', 'Rejected', 'SubEpoched'}
     error = 'Error'
     
     analysisListOptions = {'PromptString','Select steps:',...
                            'SelectionMode','multiple',...
-                           'ListString',{'Pre-Epoch','Epoch', 'ICA', 'Reject ICA components', 'Interpolate and LP filter', 'Reject bad epochs'}}
+                           'ListString',{'Pre-Epoch','Epoch', 'ICA', 'Reject ICA components', 'Interpolate and LP filter', 'Reject bad epochs', 'Sub-epoch trials'}}
+                       
+   rejectValues = {'-100', '100'};
     
 end
 
