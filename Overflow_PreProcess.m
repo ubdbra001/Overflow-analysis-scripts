@@ -189,12 +189,46 @@ for group = PreProcConstants.Groups
                 continue
             end
             
+            EEG = cust_eegthresh(EEG, 1, '1:64', PreProcConstants.rejectValues{1},...
+                                                 PreProcConstants.rejectValues{2},...
+                                                 PreProcConstants.rejectionWindow(1),...
+                                                 PreProcConstants.rejectionWindow(2),1,0);
+            uiwait(gcf)                                                                      % Wait for user input to end
+                        
+            EEG = eeg_rejsuperpose( EEG, 1, 1, 1, 1, 1, 1, 1, 1); % Superpose reject lists
             
+            EEG.rejectedData = EEG.data(:,:,EEG.reject.rejglobal); % Save rejected trials
+            
+            EEG = pop_rejepoch( EEG, EEG.reject.rejglobal,0); % Remove rejected trials
+            
+            EEG.log             = [EEG.log; {sprintf('%s - Bad epochs rejected', datestr(now, 13))}];
+            
+            EEG                 = func_saveData(EEG, PreProcConstants.outputs{6});
+
         end
 
         
         %% Epoch into different conditions
-    
+        
+        if ~exist(sprintf('%s_%s.set', fileID, PreProcConstants.outputs{7}),'file') && any(ismember(analysisSelections,7))
+            
+            try
+                func_checkAndLoad(fileID, 6);
+            catch err
+                func_warning(err.message)
+                continue
+            end
+            
+            for markerType = PreProcConstants.markers
+                EEG.(sprintf('marker_%d', markerType)) = pop_epoch( EEG, {markerType}, PreProcConstants.epochLength); % Epoch the data
+            end
+            
+            EEG.log = [EEG.log; {sprintf('%s - Data subepoched', datestr(now, 13))}];
+            
+            EEG = func_saveData(EEG, PreProcConstants.outputs{7});
+
+        end
+        
         clear EEG ALLEEG
     end
 end
