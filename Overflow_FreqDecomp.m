@@ -3,11 +3,11 @@ markers = [60001, 60002, 60003];
 chanArray = [13, 50];
 timeWindow = [0 5000];
 
-cd(dir)
+cd(dataDir)
 
 files = dir('*.set');
 
-for fileName = files.name
+for fileName = {files.name}
     
         EEG2 = pop_loadset('filename',fileName);
         
@@ -49,5 +49,7 @@ for fileName = files.name
             
             
         end
+        
+        % save EEG file
     
 end
